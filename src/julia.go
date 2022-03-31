@@ -4,6 +4,7 @@
 package main
 
 import (
+	"fmt"
 	"image"
 	"image/color"
 	"image/png"
@@ -11,6 +12,8 @@ import (
 	"math/cmplx"
 	"os"
 	"strconv"
+	"sync"
+	"time"
 )
 
 type ComplexFunc func(complex128) complex128
@@ -21,18 +24,31 @@ var Funcs []ComplexFunc = []ComplexFunc{
 	func(z complex128) complex128 { return z*z + complex(-0.835, -0.2321) },
 	func(z complex128) complex128 { return z*z + complex(0.45, 0.1428) },
 	func(z complex128) complex128 { return z*z*z + 0.400 },
-	func(z complex128) complex128 { return cmplx.Exp(z*z*z) - 0.621 },
 	func(z complex128) complex128 { return (z*z+z)/cmplx.Log(z) + complex(0.268, 0.060) },
 	func(z complex128) complex128 { return cmplx.Sqrt(cmplx.Sinh(z*z)) + complex(0.065, 0.122) },
+	func(z complex128) complex128 { return cmplx.Sin(z) * cmplx.Acos(z*z) },
 }
 
 func main() {
+	start := time.Now()
+	wg := new(sync.WaitGroup)
+	wg.Add(len(Funcs))
+
 	for n, fn := range Funcs {
-		err := CreatePng("picture-"+strconv.Itoa(n)+".png", fn, 1024)
-		if err != nil {
-			log.Fatal(err)
-		}
+		go func(n int, fn func(z complex128) complex128) {
+			err := CreatePng("picture-"+strconv.Itoa(n)+".png", fn, 1024)
+			if err != nil {
+				log.Fatal(err)
+			}
+			wg.Done()
+		}(n, fn)
 	}
+
+	wg.Wait()
+
+	end := time.Now()
+	elapsed := end.Sub(start)
+	fmt.Printf("%v", elapsed)
 }
 
 // CreatePng creates a PNG picture file with a Julia image of size n x n.
@@ -51,15 +67,23 @@ func Julia(f ComplexFunc, n int) image.Image {
 	bounds := image.Rect(-n/2, -n/2, n/2, n/2)
 	img := image.NewRGBA(bounds)
 	s := float64(n / 4)
+
+	wg := new(sync.WaitGroup)
+
 	for i := bounds.Min.X; i < bounds.Max.X; i++ {
-		for j := bounds.Min.Y; j < bounds.Max.Y; j++ {
-			n := Iterate(f, complex(float64(i)/s, float64(j)/s), 256)
-			r := uint8(0)
-			g := uint8(0)
-			b := uint8(n % 32 * 8)
-			img.Set(i, j, color.RGBA{r, g, b, 255})
-		}
+		wg.Add(1)
+		go func(i int) {
+			for j := bounds.Min.Y; j < bounds.Max.Y; j++ {
+				n := Iterate(f, complex(float64(i)/s, float64(j)/s), 256)
+				r := uint8(0)
+				g := uint8(0)
+				b := uint8(n % 32 * 8)
+				img.Set(i, j, color.RGBA{r, g, b, 255})
+			}
+			wg.Done()
+		}(i)
 	}
+	wg.Wait()
 	return img
 }
 
