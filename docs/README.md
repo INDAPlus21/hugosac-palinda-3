@@ -21,3 +21,14 @@
 **Hypothesis**: Nothing should happen. There should be no difference at all. If there is no match with the first case the program should skip the select statement. As there is no code to execute in the default-case, there is no need for it.
 
 **Result**: The program works as normal.
+
+
+# Task 2 - Fractal Images
+
+One function was removed and a new one added.
+
+Five tests were ran on both the single threaded and multi threaded versions and their execution times are listed below. The average times rounded to decimal points are presented. The parallel version uses 8 CPUs on my computer. Ran on a Dell XPS 13 9310 with an Intel i7-1185G7 with 16GB of RAM.
+
+**Single threaded**: 16,22 s
+
+**Multi threaded**: 3,01 s
