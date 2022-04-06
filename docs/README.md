@@ -27,8 +27,14 @@
 
 One function was removed and a new one added.
 
-Five tests were ran on both the single threaded and multi threaded versions and their execution times are listed below. The average times rounded to decimal points are presented. The parallel version uses 8 CPUs on my computer. Ran on a Dell XPS 13 9310 with an Intel i7-1185G7 with 16GB of RAM.
+**Single threaded**: 16.2 s
 
-**Single threaded**: 16,22 s
+**Multi threaded**: 3.0 s
 
-**Multi threaded**: 3,01 s
+
+# Task 3 - MapReduce
+
+|Variant       | Runtime (ms) |
+| ------------ | ------------:|
+| singleworker |          8.5 |
+| mapreduce    |          6   |
